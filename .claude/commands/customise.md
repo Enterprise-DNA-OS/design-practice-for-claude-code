@@ -1,14 +1,15 @@
 ---
-description: Make this system yours in plain language. Add a field, rename stages, change a rule, add a column to a document. Writes the migration, applies it, updates the commands that touch it.
+description: Make it the practice's own: add a field, a fee type, a stage template or a rule, in plain language. The migration is written, applied and tested.
 ---
 
-The operator will describe a change in their own words, for example "add a PO number to every order", "our stages are Enquiry, Site Visit, Quoted, Booked, Done", "invoices are due in 14 days not 20", "put the account manager on the client statement".
+# /customise
 
-1. Read `CLAUDE.md`, the current schema in `supabase/migrations/`, and any command or document that touches the thing being changed. Say back in one line what you are about to change and where.
-2. Write the next numbered migration in `supabase/migrations/` (never edit an applied one). Keep names plain and lowercase. Default new columns sensibly so existing rows stay valid.
-3. Run `npm run migrate`. If it fails, fix the SQL and run it again.
-4. Update every place the change shows up: the CLI output, the affected slash commands, `views.json`, the document templates, the import mapping, and the README command table.
-5. Run `npm test`. Add an assertion for the new behaviour if the change is visible in a command's output.
-6. Update `brand.json` if the change is a branding one (business name, logo, colours) instead of a schema one, and rerun `npm run docs` or `npm run view` to show it.
+The operator describes a change, for example "add a discipline field to stages", "our standard residential job has five stages", "flag a stage when the fee used runs 15 points ahead", "claims get 15 working days in our contracts", "bill different rates for council clients".
 
-Report in three lines: what changed, the migration file, the commands that now show it. Never delete a column or a table without an explicit yes in this session.
+1. Read `supabase/migrations/`, `scripts/lib/domain.mjs` and the matching command recipe.
+2. If it is a setting (tax rate, payment terms, claim response days, utilisation target, burn tolerance, insurance), change it with `node scripts/practice.mjs set practice_profile ...`. A rate or registration is `set staff ...`. No code.
+3. Otherwise write the next numbered migration (`supabase/migrations/0002_<what>.sql`). Never edit an applied migration. Update `fields` in `scripts/lib/domain.mjs` if the field should be writable, the queries, and the recipe in `.claude/commands/`.
+4. Back up first: `node scripts/practice.mjs export backup.json`. Apply with `npm run migrate`, then `npm test`. Add a test for the new rule in `scripts/smoke.mjs`.
+5. Show before and after on real records.
+
+A client portal, a phone timesheet app, a Gantt planner or a connection to Xero is a separate build, not a customisation here.

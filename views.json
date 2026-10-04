@@ -1,13 +1,44 @@
 [
   {
     "name": "week",
-    "title": "This week",
-    "subtitle": "Design Practice for Claude Code: what needs attention, rendered by npm run view",
+    "title": "Practice week",
+    "subtitle": "Fees, money and people that need a director this week",
     "sections": [
       {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
+        "title": "Fee burning ahead of progress",
+        "note": "Share of the fee used in time against the percent complete. The gap is the warning.",
+        "sql": "select sp.number, sp.project, sp.stage, sp.percent_complete as complete, sp.fee_used_pct as fee_used, sp.total_fee as fee, sp.fee_left from stage_position sp cross join practice_profile p where sp.status = 'active' and sp.fee_type in ('fixed', 'percent', 'capped') and sp.total_fee > 0 and sp.fee_used_pct > sp.percent_complete + p.burn_tolerance order by sp.fee_used_pct - sp.percent_complete desc"
+      },
+      {
+        "title": "Work to invoice",
+        "sql": "select number, project, stage, fee_type, earned, invoiced, wip as to_invoice from stage_position where wip > 0 order by wip desc"
+      },
+      {
+        "title": "Overdue invoices",
+        "sql": "select name as invoice, client, due_on, balance, practice_today() - due_on as days_overdue from invoice_balances where status = 'issued' and balance > 0 and due_on < practice_today() order by due_on"
+      },
+      {
+        "title": "Variations waiting",
+        "sql": "select v.name as variation, p.name as project, v.description, v.fee, v.status, v.submitted_on from variations v join projects p on p.id = v.project_id where v.status in ('draft', 'submitted') order by v.submitted_on nulls last"
+      },
+      {
+        "title": "People, next four weeks",
+        "sql": "select name as person, week_of, available, planned, over_by from capacity where over_by > 0 or planned = 0 order by week_of, name"
+      }
+    ]
+  },
+  {
+    "name": "projects",
+    "title": "Project fees",
+    "subtitle": "Every project: fee, earned, invoiced and margin to date",
+    "sections": [
+      {
+        "title": "Projects",
+        "sql": "select number, name as project, client, manager, status, fee, earned, invoiced, wip as to_invoice, margin_to_date from project_position where fee > 0 order by number"
+      },
+      {
+        "title": "Stages",
+        "sql": "select number, stage, fee_type, total_fee as fee, percent_complete as complete, fee_used_pct as fee_used, invoiced, status from stage_position where fee_type <> 'none' order by number, sort"
       }
     ]
   }
